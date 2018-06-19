@@ -15,3 +15,8 @@ $ source deactivate
 (anaconda prompt)
 $ activate berlioz27
 $ deactivate
+
+
+## PIP Packages
+pip install websocket-client
+pip install python-delay
