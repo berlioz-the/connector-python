@@ -1,9 +1,26 @@
-import registry
+import log
+logger = log.get('berlioz')
+
+from registry import Registry
 from client import Client
+from processor import Processor
 import sys
 import signal
+import json
 
-client = Client()
+registry = Registry()
+processor = Processor(registry)
+
+def onMessage(msg):
+    for section, data in msg.items():
+        # logger.info('Section %s, data: %s', section, data)
+        processor.accept(section, data)
+    logger.info('**** REGISTRY: %s', json.dumps(registry.extractRoot(), indent=4, sort_keys=True))
+client = Client(onMessage)
+
+
+
+
 
 original_sigint = None
 
@@ -17,8 +34,6 @@ def signalHandler(a,b):
 
 original_sigint = signal.getsignal(signal.SIGINT)
 signal.signal(signal.SIGINT,signalHandler)
-
-kuku = 1234
 
 
 
