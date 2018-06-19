@@ -6,7 +6,7 @@ def get(name):
     handler = logging.StreamHandler()
     handler.setFormatter(formatter)
 
-    logger = logging.getLogger(name)
+    logger = logging.getLogger('berlioz' + name)
     logger.setLevel(logging.INFO)
     logger.addHandler(handler)
     logger.info("Init")
