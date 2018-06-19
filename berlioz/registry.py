@@ -17,7 +17,7 @@ class Registry:
 
         section = self._getSection(sectionName)
         pathStr = self._getKey(path)
-        # currValue = section[pathStr]
+        # currValue = section.get(pathStr)
         # if (_.isEqual(currValue, value)) {
         #     return;
         # }
@@ -27,11 +27,18 @@ class Registry:
     def get(self, sectionName, path):
         section = self._getSection(sectionName)
         pathStr = self._getKey(path)
-        return section[pathStr]
+        return section.get(pathStr)
 
     def reset(self, sectionName):
         logger.debug('RESET. Section: %s', sectionName)
         self._sections[sectionName] = {}
+
+    def subscribe(self, sectionName, path, cb):
+        subscriberId = self._getSubscriberId(sectionName, path)
+        if not subscriberId in self._subscribers:
+            self._subscribers[subscriberId] = []
+        self._subscribers[subscriberId].append(cb)
+        self._notifyToSubscriber(sectionName, path, cb)
 
     def _getKey(self, path):
         return json.dumps(path)
@@ -42,4 +49,27 @@ class Registry:
         return self._sections[name]
 
     def _notifyToSubscribers(self, sectionName, path):
-        pass
+        subscriberId = self._getSubscriberId(sectionName, path)
+        if not subscriberId in self._subscribers:
+            return
+        value = self.get(sectionName, path)
+        if not value:
+            return
+        for cb in self._subscribers[subscriberId]:
+            self._triggerToSubscriber(value, cb)
+
+    def _notifyToSubscriber(self, sectionName, path, cb):
+        value = self.get(sectionName, path)
+        if not value:
+            return
+        self._triggerToSubscriber(value, cb)
+
+    def _triggerToSubscriber(self, value, cb):
+        cb(value)
+
+    def _getSubscriberId(self, sectionName, path):
+        subscriber = {
+            "section": sectionName,
+            "path": path
+        }
+        return json.dumps(subscriber)

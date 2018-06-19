@@ -1,21 +1,29 @@
 import log
 logger = log.get('berlioz')
 
-from registry import Registry
-from client import Client
-from processor import Processor
 import sys
 import signal
 import json
 
+from registry import Registry
+from policy import Policy
+from processor import Processor
+from client import Client
+
 registry = Registry()
+policy = Policy(registry)
 processor = Processor(registry)
+
+def onChange(data):
+    logger.info('**** ON CHANGE: %s', data)
+
+policy.monitor('zipkin-endpoint', [], onChange)
 
 def onMessage(msg):
     for section, data in msg.items():
         # logger.info('Section %s, data: %s', section, data)
         processor.accept(section, data)
-    logger.info('**** REGISTRY: %s', json.dumps(registry.extractRoot(), indent=4, sort_keys=True))
+    # logger.info('**** REGISTRY: %s', json.dumps(registry.extractRoot(), indent=4, sort_keys=True))
 client = Client(onMessage)
 
 
