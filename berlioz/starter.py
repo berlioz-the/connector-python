@@ -1,8 +1,9 @@
 import log
 logger = log.get(__name__)
 
+logger.info('Starting...')
+
 import sys
-import signal
 import json
 import random as rand
 
@@ -11,6 +12,8 @@ from policy import Policy
 from zipkin import Zipkin
 from processor import Processor
 from client import Client
+from executor import Executor
+from native_client import NativeClient
 
 registry = Registry()
 policy = Policy(registry)
@@ -25,18 +28,6 @@ def onMessage(msg):
 client = Client(onMessage)
 
 
-original_sigint = None
-def signalHandler(a,b):
-    global original_sigint
-    signal.signal(signal.SIGINT, original_sigint)
-
-    print 'EXITING...'
-    client.close()
-    sys.exit(0)
-original_sigint = signal.getsignal(signal.SIGINT)
-signal.signal(signal.SIGINT,signalHandler)
-
-
 def monitorNatives(kind, name, cb):
     registry.subscribe(kind, [name], cb)
 
@@ -46,6 +37,50 @@ def getNatives(kind, name):
 def getNative(kind, name):
     peers = getNatives(kind, name)
     return randomFromDict(peers)
+
+
+
+import aws as AWS
+nativeClientFetcher = {
+    "dynamodb" : AWS.fetchDynamoClient,
+    "kinesis" : AWS.fetchKinesisClient
+}
+count = 0
+
+class NativeResourceWrapper(object):
+
+    def __init__(self, target):
+        object.__setattr__(self, "_target", target)
+
+    def __getattribute__(self, propKey):
+
+        def perform(*args, **kwargs):
+            target = object.__getattribute__(self, "_target")
+
+            def execAction(peer):
+                logger.info('Running %s', propKey)
+                global count
+                count = count + 1
+                if count < 5:
+                    raise Exception('bla bla bla')
+                clientFetcher = nativeClientFetcher.get(peer['subClass'])
+                if not clientFetcher:
+                    raise Exception('Service not supported', peer['subClass'])
+                client = clientFetcher(peer)
+                origMethod = getattr(client, propKey)
+                result = origMethod(args, kwargs)
+                logger.info('Running %s completed', propKey)
+                return result
+            executor = Executor(registry, policy, zipkin, target, propKey, '/', execAction)
+            return executor.perform()
+
+        return perform
+
+
+def getNativeClient(kind, name):
+    nativeClient = NativeResourceWrapper([kind, name])
+    return nativeClient
+
 
 
 

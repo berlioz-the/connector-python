@@ -24,6 +24,9 @@ def getDatabases(name):
 def getDatabase(name):
     return _starter.getNative('database', name)
 
+def getDatabaseClient(name):
+    return _starter.getNativeClient('database', name)
+
 # QUEUES 
 def monitorQueues(name, cb):
     _starter.monitorNatives('queue', name, cb)
@@ -33,3 +36,6 @@ def getQueues(name):
 
 def getQueue(name):
     return _starter.getNative('queue', name)
+
+def getQueueClient(name):
+    return _starter.getNativeClient('queue', name)

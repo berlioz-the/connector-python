@@ -65,7 +65,10 @@ class Registry:
         self._triggerToSubscriber(value, cb)
 
     def _triggerToSubscriber(self, value, cb):
-        cb(value)
+        try:
+            cb(value)
+        except Exception:
+            logger.exception('Caught from subscriber')
 
     def _getSubscriberId(self, sectionName, path):
         subscriber = {

@@ -4,6 +4,7 @@ logger = log.get(__name__)
 import os
 from utils import delay
 import random as rand
+import time
 
 class Executor:
     
@@ -24,7 +25,7 @@ class Executor:
         elif target[0] == 'cluster':
             self._remoteServiceName = target[1] + '-' + target[2]
         else:
-            self._remoteServiceName = os.environ['BERLIOZ_CLUSTER'] + '-' + target.join('-')
+            self._remoteServiceName = os.environ['BERLIOZ_CLUSTER'] + '-' + '-'.join(target)
 
         self._context = {
             "canRetry": True,
@@ -32,49 +33,61 @@ class Executor:
         }
 
     def perform(self):
-        return self._try()
+        while self._canTry():
+            self._retryWait()
+            self._try()
+            if self._checkCompleted():
+                return self._context['result']
+        exInfo = self._context['lastError']
+        if exInfo:
+            raise exInfo
+
+    def _canTry(self):
+        if self._context['tryCount'] == 0:
+            return True
+        if self._context['tryCount'] >= self._resolvePolicy('retry-count'):
+            return False
+        return self._context['canRetry']
 
     def _try(self):
+        logger.info('_try begin')
+
         self._context['hasError'] = False
         self._context['lastError'] = None
         self._context['tryCount'] = self._context['tryCount'] + 1
 
         self._perform()
-        if self._checkCompleted():
-            return self._context['result']
-        else:
-            return self._retry()
-
-    def _retry(self):
-        if self._context['tryCount'] >= self._resolvePolicy('retry-count'):
-            self._context['canRetry'] = False
-
-        if not self._context['canRetry']:
-            return self._context['lastError'] #Promise.reject(this._context.lastError);
-
-        return self._retryWait()
+        logger.info('_try end')
 
     def _retryWait(self):
-        # timeout = self._resolvePolicy('retry-initial-delay')
-        # timeout = timeout * pow(self._resolvePolicy('retry-delay-multiplier'), self._context['tryCount'] - 1)
-        # timeout = min(timeout, self._resolvePolicy('retry-max-delay'))
-        # if timeout > 0:
-        #     tracer = this._instrument('sleep', 'GET', 'http://sleep')
-        #     delay(timeout, self.try, tracer)
-        # else:
-        #     self.try()
-        return self._try()
+        if self._context['tryCount'] == 0:
+            return
+        logger.info('_retryWait')
+
+        timeout = self._resolvePolicy('retry-initial-delay')
+        timeout = timeout * pow(self._resolvePolicy('retry-delay-multiplier'), self._context['tryCount'] - 1)
+        timeout = min(timeout, self._resolvePolicy('retry-max-delay'))
+        logger.info('_retryWait timeout: %s', timeout)
+
+        if timeout > 0:
+            # tracer = this._instrument('sleep', 'GET', 'http://sleep')
+            time.sleep(timeout / 1000)
 
     def _perform(self):
-        peer = self._fetchPeer()
-        if not peer:
-            if not self._resolvePolicy('no-peer-retry'):
-                self._context['canRetry'] = False
-            return 'No peer Found' # Promise.reject(new Error('No peer found.'));
+        try:
+            peer = self._fetchPeer()
+            if not peer:
+                if not self._resolvePolicy('no-peer-retry'):
+                    self._context['canRetry'] = False
+                raise Exception('No peers found', self._target)
 
-        result = self._actionCb(peer) #, tracer.traceId)
-        self._context['result'] = result
-        return result
+            result = self._actionCb(peer) #, tracer.traceId)
+            self._context['result'] = result
+        except Exception as ex:
+            self._context['hasError'] = True
+            self._context['lastError'] = ex
+            logger.exception('operation failed')
+
         # var tracer = this._instrument(this._remoteServiceName, this._trackerMethod, this._trackerUrl);
         # return Promise.resolve()
         #     .then(result => {
@@ -89,6 +102,7 @@ class Executor:
         #     });
     
     def _fetchPeer(self):
+        return []
         peers = self._registry.get(self._target[0], self._target[1:])
         key = rand.choice(peers.keys()) 
         return peers[key]
@@ -97,7 +111,6 @@ class Executor:
         if self._context['hasError']:
             return False
         return True
-
 
     def _resolvePolicy(self, name):
         return self._policy.resolve(name, self._target)

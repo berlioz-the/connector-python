@@ -19,3 +19,11 @@ $ deactivate
 
 ## PIP Packages
 pip install websocket-client
+
+
+## Python 3 HTTP Client & Server Library 
+https://aiohttp.readthedocs.io/en/stable/#
+
+## Python 2 vs 3
+http://python-future.org/compatible_idioms.html
+https://wiki.python.org/moin/Python2orPython3
