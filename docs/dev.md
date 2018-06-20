@@ -19,4 +19,3 @@ $ deactivate
 
 ## PIP Packages
 pip install websocket-client
-pip install python-delay

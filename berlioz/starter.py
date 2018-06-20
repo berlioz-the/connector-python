@@ -8,11 +8,13 @@ import random as rand
 
 from registry import Registry
 from policy import Policy
+from zipkin import Zipkin
 from processor import Processor
 from client import Client
 
 registry = Registry()
 policy = Policy(registry)
+zipkin = Zipkin(policy)
 processor = Processor(registry)
 
 def onMessage(msg):

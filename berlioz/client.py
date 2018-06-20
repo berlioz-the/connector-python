@@ -1,9 +1,9 @@
 import log
 logger = log.get(__name__)
 
+from utils import delay
 import websocket
 import json
-from delay import delayed
 
 class Client(): 
 
@@ -55,6 +55,7 @@ class Client():
     def _onOpen(self, ws):
         logger.info('Opened')
 
-    @delayed(1)
     def _reconnect(self):
-        self._connect()
+        if self.isClosed:
+            return
+        delay(1000, self._connect)
