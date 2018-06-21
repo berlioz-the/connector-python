@@ -81,7 +81,19 @@ class Executor:
                     self._context['canRetry'] = False
                 raise Exception('No peers found', self._target)
 
-            result = self._actionCb(peer) #, tracer.traceId)
+            zipki_span = None
+            if self._zipkin:
+                binary_annotations = {
+                    'http.url': self._trackerUrl
+                }
+                zipki_span = self._zipkin.instrumentRequest('-'.join(self._target),
+                                                            self._trackerMethod,
+                                                            binary_annotations)
+            if zipki_span:
+                with zipki_span:
+                    result = self._actionCb(peer, zipki_span)
+            else:
+                result = self._actionCb(peer)
             logger.debug('Result: %s', result)
             self._context['result'] = result
         except Exception as ex:
@@ -104,6 +116,8 @@ class Executor:
     
     def _fetchPeer(self):
         peers = self._registry.get(self._target[0], self._target[1:])
+        if not peers:
+            return None
         key = rand.choice(peers.keys()) 
         return peers[key]
 

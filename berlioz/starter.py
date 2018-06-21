@@ -55,6 +55,8 @@ class RequestWrapper(object):
         def perform(*args, **kwargs):
             print(args)
             print(kwargs)
+            kwargs.setdefault('headers', {})
+
             target = object.__getattribute__(self, "_target")
             if propKey == 'request':
                 method = args[0]
@@ -63,14 +65,19 @@ class RequestWrapper(object):
                 method = propKey 
                 url = args[0]
 
-            def execAction(peer):
+            def execAction(peer, zipkin_span=None):
                 print(peer)
                 print(url)
                 origMethod = getattr(requests, propKey)
                 newargs = []
                 if propKey == 'request':
                     newargs.append(method)    
-                newargs.append(peer['protocol'] + '://' + peer['address'] + ':' + str(peer['port']) + url)
+                finalUrl = peer['protocol'] + '://' + peer['address'] + ':' + str(peer['port'])
+                if url:
+                    finalUrl = finalUrl + url
+                newargs.append(finalUrl)
+                if zipkin_span:
+                    zipkin.addZipkinHeaders(kwargs['headers'], zipkin_span)
                 result = origMethod(*newargs, **kwargs)
                 return result
             executor = Executor(registry, policy, zipkin, target, method, url, execAction)
@@ -99,7 +106,7 @@ class NativeResourceWrapper(object):
         def perform(*args, **kwargs):
             target = object.__getattribute__(self, "_target")
 
-            def execAction(peer):
+            def execAction(peer, zipkin_span=None):
                 logger.info('Running %s', propKey)
                 clientFetcher = nativeClientFetcher.get(peer['subClass'])
                 if not clientFetcher:
@@ -123,6 +130,10 @@ def getNativeClient(kind, name):
     return nativeClient
 
 
+def instrument(method, binary_annotations):
+    return zipkin.instrument(method, binary_annotations)
+
+
 def randomFromList(list):
     return rand.choice(list)
 
@@ -131,3 +142,7 @@ def randomFromDict(dict):
         return False
     key = randomFromList(dict.keys())
     return dict[key]
+
+def setupFlask(app):
+    from frameworks.b_flask import Flask
+    Flask(app, zipkin, policy)
