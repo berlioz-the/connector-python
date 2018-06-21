@@ -1,6 +1,6 @@
 import os
 # os.environ['BERLIOZ_AGENT_PATH'] = "ws://127.0.0.1:55555/82d1c32d-19bd-4e8b-a53b-7529e386b7c3"
-os.environ['BERLIOZ_AGENT_PATH'] = "ws://127.0.0.1:40000/48b7842a-e61f-409d-8c81-8b2732db28d7"
+os.environ['BERLIOZ_AGENT_PATH'] = "ws://172.17.0.2:55555/c3982ad5-0f0f-4451-a7fa-898667106784"
 os.environ['BERLIOZ_CLUSTER'] = "kin"
 
 import berlioz
@@ -8,6 +8,9 @@ import berlioz
 
 def outputPeers(peers):
     berlioz.logger.info('**** Peers: %s', berlioz.getPeers('service', 'app', 'client'))
+    result = berlioz.request('service', 'app', 'client').get('/')
+    print('--------------------------------')
+    print (result.json())
 berlioz.monitorPeers('service', 'app', 'client', outputPeers)
 
 def outputDatabases(peers):

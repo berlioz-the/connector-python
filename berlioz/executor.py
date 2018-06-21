@@ -82,6 +82,7 @@ class Executor:
                 raise Exception('No peers found', self._target)
 
             result = self._actionCb(peer) #, tracer.traceId)
+            logger.debug('Result: %s', result)
             self._context['result'] = result
         except Exception as ex:
             self._context['hasError'] = True

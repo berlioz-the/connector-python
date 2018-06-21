@@ -13,7 +13,9 @@ from zipkin import Zipkin
 from processor import Processor
 from client import Client
 from executor import Executor
-from native_client import NativeClient
+
+import copy
+import requests
 
 registry = Registry()
 policy = Policy(registry)
@@ -38,6 +40,43 @@ def getNative(kind, name):
     peers = getNatives(kind, name)
     return randomFromDict(peers)
 
+
+
+def makeRequest(kind, name, endpoint):
+    return RequestWrapper([kind, name, endpoint])
+
+class RequestWrapper(object):
+
+    def __init__(self, target):
+        object.__setattr__(self, "_target", target)
+
+    def __getattribute__(self, propKey):
+
+        def perform(*args, **kwargs):
+            print(args)
+            print(kwargs)
+            target = object.__getattribute__(self, "_target")
+            if propKey == 'request':
+                method = args[0]
+                url = args[1]
+            else:
+                method = propKey 
+                url = args[0]
+
+            def execAction(peer):
+                print(peer)
+                print(url)
+                origMethod = getattr(requests, propKey)
+                newargs = []
+                if propKey == 'request':
+                    newargs.append(method)    
+                newargs.append(peer['protocol'] + '://' + peer['address'] + ':' + str(peer['port']) + url)
+                result = origMethod(*newargs, **kwargs)
+                return result
+            executor = Executor(registry, policy, zipkin, target, method, url, execAction)
+            return executor.perform()
+
+        return perform
 
 
 import aws as AWS
@@ -82,8 +121,6 @@ class NativeResourceWrapper(object):
 def getNativeClient(kind, name):
     nativeClient = NativeResourceWrapper([kind, name])
     return nativeClient
-
-
 
 
 def randomFromList(list):

@@ -14,6 +14,9 @@ def getRandomPeer(kind, name, endpoint):
     peers = getPeers(kind, name, endpoint)
     return _starter.randomFromDict(peers)
 
+def request(kind, name, endpoint):
+    return _starter.makeRequest(kind, name, endpoint)
+
 # DATABASES 
 def monitorDatabases(name, cb):
     _starter.monitorNatives('database', name, cb)
