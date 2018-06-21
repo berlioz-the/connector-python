@@ -19,7 +19,13 @@ $ deactivate
 
 ## PIP Packages
 pip install websocket-client
+pip install requests
+pip install flask
 
+pip install win_inet_pton
+
+pip freeze > requirements.txt
+pip install -r requirements.txt
 
 ## Python 3 HTTP Client & Server Library 
 https://aiohttp.readthedocs.io/en/stable/#
