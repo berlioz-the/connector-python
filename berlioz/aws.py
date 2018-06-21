@@ -7,8 +7,14 @@ def fetchDynamoClient(peer):
 
 def fetchKinesisClient(peer):
     kwargs = _getClientConfig(peer)
-    return boto3.resource('kinesis', **kwargs)
+    return boto3.client('kinesis', **kwargs)
 
+def setupKinesisArgs(peer, actionName, xargs, xkwargs):
+    if actionName == 'get_records':
+        return
+    if actionName == 'list_shards' and 'NextToken' in xkwargs:
+        return
+    xkwargs['StreamName'] = peer['name']
 
 def _getClientConfig(peer):
     kwargs = {}

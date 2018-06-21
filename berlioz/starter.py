@@ -45,7 +45,10 @@ nativeClientFetcher = {
     "dynamodb" : AWS.fetchDynamoClient,
     "kinesis" : AWS.fetchKinesisClient
 }
-count = 0
+nativeClientArgSetter = {
+    "kinesis" : AWS.setupKinesisArgs
+}
+
 
 class NativeResourceWrapper(object):
 
@@ -59,16 +62,15 @@ class NativeResourceWrapper(object):
 
             def execAction(peer):
                 logger.info('Running %s', propKey)
-                global count
-                count = count + 1
-                if count < 5:
-                    raise Exception('bla bla bla')
                 clientFetcher = nativeClientFetcher.get(peer['subClass'])
                 if not clientFetcher:
                     raise Exception('Service not supported', peer['subClass'])
                 client = clientFetcher(peer)
                 origMethod = getattr(client, propKey)
-                result = origMethod(args, kwargs)
+                argsSetter = nativeClientArgSetter.get(peer['subClass'])
+                if argsSetter:
+                    argsSetter(peer, propKey, args, kwargs)
+                result = origMethod(*args, **kwargs)
                 logger.info('Running %s completed', propKey)
                 return result
             executor = Executor(registry, policy, zipkin, target, propKey, '/', execAction)

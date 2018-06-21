@@ -102,7 +102,6 @@ class Executor:
         #     });
     
     def _fetchPeer(self):
-        return []
         peers = self._registry.get(self._target[0], self._target[1:])
         key = rand.choice(peers.keys()) 
         return peers[key]
