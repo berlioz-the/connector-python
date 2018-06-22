@@ -80,7 +80,10 @@ class RequestWrapper(object):
                     zipkin.addZipkinHeaders(kwargs['headers'], zipkin_span)
                 result = origMethod(*newargs, **kwargs)
                 return result
-            executor = Executor(registry, policy, zipkin, target, method, url, execAction)
+            binary_annotations = {
+                'http.url': url
+            }
+            executor = Executor(registry, policy, zipkin, target, method, binary_annotations, execAction)
             return executor.perform()
 
         return perform
@@ -119,7 +122,7 @@ class NativeResourceWrapper(object):
                 result = origMethod(*args, **kwargs)
                 logger.info('Running %s completed', propKey)
                 return result
-            executor = Executor(registry, policy, zipkin, target, propKey, '/', execAction)
+            executor = Executor(registry, policy, zipkin, target, propKey, None, execAction)
             return executor.perform()
 
         return perform

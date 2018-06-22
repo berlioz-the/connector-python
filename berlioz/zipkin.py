@@ -3,7 +3,10 @@ logger = log.get(__name__)
 
 import requests
 import os
-import win_inet_pton
+import platform
+
+if platform.system() == 'Windows':
+    import win_inet_pton
 
 from py_zipkin.zipkin import zipkin_span
 from py_zipkin.zipkin import ZipkinAttrs
@@ -17,6 +20,11 @@ class Zipkin:
         self._zipkin_context_stack = ZipkinThreadLocalStack()
         self._localName = os.environ['BERLIOZ_CLUSTER'] + '-' + os.environ['BERLIOZ_SERVICE']
         self._sampleRate = 100
+        self._policy.monitor('enable-zipkin', [], self._onZipkinEnabledChanged)
+        self._policy.monitor('zipkin-endpoint', [], self._onZipkinEndpointChanged)
+
+    def isEnabled(self):
+        return self._isEnabled and self._endpoint
 
     def addZipkinHeaders(self, headers, zipkin_span):
         if not zipkin_span:
@@ -87,13 +95,25 @@ class Zipkin:
         return zipkin_span(**zipArgs)
 
     def _zipkin_http_transport(self, encoded_span):
-        # encoding prefix explained in https://github.com/Yelp/py_zipkin#transport 
-        body = b"\x0c\x00\x00\x00\x01" + encoded_span
-        print(encoded_span)
-        zipkin_url = "http://172.17.0.3:9411/api/v1/spans"
+        if not self._isEnabled:
+            return
+        zipkin_url = self._endpoint
+        if not zipkin_url:
+            return
+        # TODO: check https://github.com/Yelp/py_zipkin#transport for
+        # body = b"\x0c\x00\x00\x00\x01" + encoded_span
         headers = {"Content-Type": "application/x-thrift"}
+        # TODO: Run in a thread
+        try:
+            requests.post(zipkin_url, data=encoded_span, headers=headers)
+        except Exception, e:
+            logger.error(e)
 
-        # You'd probably want to wrap this in a try/except in case POSTing fails
-        res = requests.post(zipkin_url, data=encoded_span, headers=headers)
-        print(res)
-        print(res.text)
+    def _onZipkinEnabledChanged(self, value):
+        self._isEnabled = value
+
+    def _onZipkinEndpointChanged(self, value):
+        self._endpoint = value
+        if self._endpoint:
+            self._endpoint = self._endpoint.replace('v2', 'v1')
+

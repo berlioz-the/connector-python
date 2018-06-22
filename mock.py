@@ -1,6 +1,6 @@
 import os
 # os.environ['BERLIOZ_AGENT_PATH'] = "ws://127.0.0.1:55555/82d1c32d-19bd-4e8b-a53b-7529e386b7c3"
-os.environ['BERLIOZ_AGENT_PATH'] = "ws://172.17.0.2:55555/9be87152-08fd-480e-9754-f0ec850ee2fc"
+os.environ['BERLIOZ_AGENT_PATH'] = "ws://172.17.0.3:55555/87c93cdd-49fb-4a12-a7e8-6177c184d7ec"
 os.environ['BERLIOZ_CLUSTER'] = "kin"
 os.environ['BERLIOZ_SERVICE'] = "web"
 
@@ -46,6 +46,8 @@ berlioz.monitorDatabases('arts', outputQueues)
 import time
 
 from flask import Flask
+from flask.json import jsonify
+
 app = Flask(__name__)
 berlioz.setupFlask(app)
 
@@ -61,10 +63,11 @@ def hello():
     # time.sleep(.5)
     return "Hello World! " + res
 
-@app.route('/kuku')
-def kuku():
-    time.sleep(0.5)
-    return "kuku"
+@app.route('/db')
+def db():
+    table = berlioz.getDatabaseClient('contacts')
+    contents = table.scan()
+    return jsonify(contents)
 
 @berlioz.instrument_func()
 def some_other_func():

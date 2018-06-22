@@ -8,16 +8,15 @@ import time
 
 class Executor:
     
-    def __init__(self, registry, policy, zipkin, target, trackerMethod, trackerUrl, actionCb):
+    def __init__(self, registry, policy, zipkin, target, trackerMethod, binary_annotations, actionCb):
         self._registry = registry
         self._policy = policy
         self._target = target
         self._trackerMethod = trackerMethod
-        self._trackerUrl = trackerUrl
+        self._binary_annotations = binary_annotations
         self._actionCb = actionCb
     
-        if self._resolvePolicy('enable-zipkin'):
-            logger.info('Zipkin is enabled.')
+        if zipkin.isEnabled():
             self._zipkin = zipkin
 
         if target[0] == 'service':
@@ -83,12 +82,9 @@ class Executor:
 
             zipki_span = None
             if self._zipkin:
-                binary_annotations = {
-                    'http.url': self._trackerUrl
-                }
                 zipki_span = self._zipkin.instrumentRequest('-'.join(self._target),
                                                             self._trackerMethod,
-                                                            binary_annotations)
+                                                            self._binary_annotations)
             if zipki_span:
                 with zipki_span:
                     result = self._actionCb(peer, zipki_span)
