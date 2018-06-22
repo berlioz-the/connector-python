@@ -5,4 +5,8 @@
 # print(r.status_code)
 # print(r.text)
 
-import boto3
+# import boto3
+
+import berlioz.metadata as metadata
+
+print metadata.VERSION

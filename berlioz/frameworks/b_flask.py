@@ -11,9 +11,11 @@ class Flask:
         self._app.after_request(self._handleAfterRequest)
 
     def _handleBeforeRequest(self):
-        url = None
-        if flask_request.endpoint is not None:
-           url = '/' + flask_request.endpoint
+        url = ''
+        if flask_request.script_root is not None:
+           url = flask_request.script_root
+        if flask_request.path is not None:
+           url = url + flask_request.path
         zipkin_span = self._zipkin.instrumentServer(flask_request.headers,
                                                     flask_request.method,
                                                     url)

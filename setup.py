@@ -4,18 +4,21 @@ from setuptools import setup
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+from berlioz import metadata
+
 setup(
     name = "berlioz",
-    version = "0.0.6",
+    version = metadata.VERSION,
     url = 'https://berlioz.cloud',
     author = "Berlioz",
     author_email = "info@berlioz.cloud",
     maintainer = "Ruben Hakopian",
-    maintainer_email = "ruben.hakopian@gmal.com",
+    maintainer_email = "ruben.hakopian@gmail.com",
     description = ("Python SDK for Berlioz Cloud"),
     license = "Apache License 2.0",
     keywords = "microservices service mesh cloud aws",
-    packages=['berlioz'],
+    packages=['berlioz', 'berlioz/frameworks'],
+    include_package_data=True,
     long_description=read('README.rst'),
     python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*',
     install_requires=[

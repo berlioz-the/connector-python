@@ -1,72 +1,79 @@
 import log
 logger = log.get(__name__)
 
-import starter as _starter
-from functools import wraps
-import inspect
+import metadata
+logger.info('BerliozPythonSDK v%s', metadata.VERSION)
 
-# PEERS 
-def monitorPeers(kind, name, endpoint, cb):
-    _starter.registry.subscribe(kind, [name, endpoint], cb)
+import os
+if not os.environ.get('BERLIOZ_CLUSTER'):
+    logger.warning('Using berlioz sdk outside of managed environment.')
+else:
+    import starter as _starter
+    from functools import wraps
+    import inspect
 
-def getPeers(kind, name, endpoint):
-    return _starter.registry.get(kind, [name, endpoint])
+    # PEERS 
+    def monitorPeers(kind, name, endpoint, cb):
+        _starter.registry.subscribe(kind, [name, endpoint], cb)
 
-def getRandomPeer(kind, name, endpoint):
-    peers = getPeers(kind, name, endpoint)
-    return _starter.randomFromDict(peers)
+    def getPeers(kind, name, endpoint):
+        return _starter.registry.get(kind, [name, endpoint])
 
-def request(kind, name, endpoint):
-    return _starter.makeRequest(kind, name, endpoint)
+    def getRandomPeer(kind, name, endpoint):
+        peers = getPeers(kind, name, endpoint)
+        return _starter.randomFromDict(peers)
 
-# DATABASES 
-def monitorDatabases(name, cb):
-    _starter.monitorNatives('database', name, cb)
+    def request(kind, name, endpoint):
+        return _starter.makeRequest(kind, name, endpoint)
 
-def getDatabases(name):
-    return _starter.getNatives('database', name)
+    # DATABASES 
+    def monitorDatabases(name, cb):
+        _starter.monitorNatives('database', name, cb)
 
-def getDatabase(name):
-    return _starter.getNative('database', name)
+    def getDatabases(name):
+        return _starter.getNatives('database', name)
 
-def getDatabaseClient(name):
-    return _starter.getNativeClient('database', name)
+    def getDatabase(name):
+        return _starter.getNative('database', name)
 
-# QUEUES 
-def monitorQueues(name, cb):
-    _starter.monitorNatives('queue', name, cb)
+    def getDatabaseClient(name):
+        return _starter.getNativeClient('database', name)
 
-def getQueues(name):
-    return _starter.getNatives('queue', name)
+    # QUEUES 
+    def monitorQueues(name, cb):
+        _starter.monitorNatives('queue', name, cb)
 
-def getQueue(name):
-    return _starter.getNative('queue', name)
+    def getQueues(name):
+        return _starter.getNatives('queue', name)
 
-def getQueueClient(name):
-    return _starter.getNativeClient('queue', name)
+    def getQueue(name):
+        return _starter.getNative('queue', name)
 
-# TRACING
-def instrument(method, binary_annotations=None):
-    return _starter.instrument(method, binary_annotations)
+    def getQueueClient(name):
+        return _starter.getNativeClient('queue', name)
 
-def instrument_func(**instArgs):
-    def decorator(f):
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            mod = inspect.getmodule(f)
-            binary_annotations = instArgs.get('binary_annotations', {})
-            binary_annotations['source.path'] = mod.__file__
-            binary_annotations['source.func'] = f.__name__
-            binary_annotations['source.module'] = mod.__name__
-            method = instArgs.get('name')
-            if not method:
-                method = 'func-' + f.__name__
+    # TRACING
+    def instrument(method, binary_annotations=None):
+        return _starter.instrument(method, binary_annotations)
 
-            with instrument(method, binary_annotations):
-                return f(*args, **kwargs)
-        return wrapper
-    return decorator
+    def instrument_func(**instArgs):
+        def decorator(f):
+            @wraps(f)
+            def wrapper(*args, **kwargs):
+                mod = inspect.getmodule(f)
+                binary_annotations = instArgs.get('binary_annotations', {})
+                binary_annotations['source.path'] = mod.__file__
+                binary_annotations['source.func'] = f.__name__
+                binary_annotations['source.module'] = mod.__name__
+                method = instArgs.get('name')
+                if not method:
+                    method = 'func-' + f.__name__
 
-# FRAMEWORKS
-def setupFlask(app):
-    return _starter.setupFlask(app)
+                with instrument(method, binary_annotations):
+                    return f(*args, **kwargs)
+            return wrapper
+        return decorator
+
+    # FRAMEWORKS
+    def setupFlask(app):
+        return _starter.setupFlask(app)
