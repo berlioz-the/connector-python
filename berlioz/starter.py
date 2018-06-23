@@ -1,4 +1,4 @@
-import log
+from . import log
 logger = log.get(__name__)
 
 logger.info('Starting...')
@@ -7,12 +7,12 @@ import sys
 import json
 import random as rand
 
-from registry import Registry
-from policy import Policy
-from zipkin import Zipkin
-from processor import Processor
-from client import Client
-from executor import Executor
+from .registry import Registry
+from .policy import Policy
+from .zipkin import Zipkin
+from .processor import Processor
+from .client import Client
+from .executor import Executor
 
 import copy
 import requests
@@ -89,7 +89,7 @@ class RequestWrapper(object):
         return perform
 
 
-import aws as AWS
+from . import aws as AWS
 nativeClientFetcher = {
     "dynamodb" : AWS.fetchDynamoClient,
     "kinesis" : AWS.fetchKinesisClient
@@ -142,10 +142,10 @@ def randomFromList(list):
 
 def randomFromDict(dict):
     if not dict:
-        return False
-    key = randomFromList(dict.keys())
+        return None
+    key = randomFromList(list(dict.keys()))
     return dict[key]
 
 def setupFlask(app):
-    from frameworks.b_flask import Flask
+    from .frameworks.b_flask import Flask
     Flask(app, zipkin, policy)

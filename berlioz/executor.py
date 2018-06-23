@@ -1,8 +1,8 @@
-import log
+from . import log
 logger = log.get(__name__)
 
 import os
-from utils import delay
+from .utils import delay
 import random as rand
 import time
 
@@ -114,7 +114,7 @@ class Executor:
         peers = self._registry.get(self._target[0], self._target[1:])
         if not peers:
             return None
-        key = rand.choice(peers.keys()) 
+        key = rand.choice(list(peers.keys())) 
         return peers[key]
 
     def _checkCompleted(self):

@@ -1,4 +1,4 @@
-import log
+from . import log
 logger = log.get(__name__)
 
 class Processor:

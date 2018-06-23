@@ -1,14 +1,14 @@
-import log
+from . import log
 logger = log.get(__name__)
 
-import metadata
+from . import metadata
 logger.info('BerliozPythonSDK v%s', metadata.VERSION)
 
 import os
 if not os.environ.get('BERLIOZ_CLUSTER'):
     logger.warning('Using berlioz sdk outside of managed environment.')
 else:
-    import starter as _starter
+    from . import starter as _starter
     from functools import wraps
     import inspect
 

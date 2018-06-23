@@ -7,6 +7,9 @@
 
 # import boto3
 
-import berlioz.metadata as metadata
+if __name__ == '__main__':
+    import berlioz
+else:
+    from . import berlioz
 
-print metadata.VERSION
+print(berlioz.metadata.VERSION)

@@ -1,7 +1,7 @@
-import log
+from . import log
 logger = log.get(__name__)
 
-from utils import delay
+from .utils import delay
 import os
 import websocket
 import json

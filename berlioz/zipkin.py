@@ -1,4 +1,4 @@
-import log
+from . import log
 logger = log.get(__name__)
 
 import requests
@@ -106,7 +106,7 @@ class Zipkin:
         # TODO: Run in a thread
         try:
             requests.post(zipkin_url, data=encoded_span, headers=headers)
-        except Exception, e:
+        except Exception as e:
             logger.error(e)
 
     def _onZipkinEnabledChanged(self, value):

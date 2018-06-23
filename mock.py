@@ -1,11 +1,13 @@
 import os
 # os.environ['BERLIOZ_AGENT_PATH'] = "ws://127.0.0.1:55555/82d1c32d-19bd-4e8b-a53b-7529e386b7c3"
-os.environ['BERLIOZ_AGENT_PATH'] = "ws://172.17.0.3:55555/87c93cdd-49fb-4a12-a7e8-6177c184d7ec"
+os.environ['BERLIOZ_AGENT_PATH'] = "ws://172.17.0.2:55555/638a0c81-669d-4b33-914f-f208182666b1"
 os.environ['BERLIOZ_CLUSTER'] = "kin"
 os.environ['BERLIOZ_SERVICE'] = "web"
 
-import berlioz
-
+if __name__ == '__main__':
+    import berlioz
+else:
+    from . import berlioz
 
 def outputPeers(peers):
     berlioz.logger.info('**** Peers: %s', berlioz.getPeers('service', 'app', 'client'))
