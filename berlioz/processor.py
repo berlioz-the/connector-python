@@ -14,7 +14,9 @@ class Processor:
             "service": self._handleServicePeers,
             "cluster": self._handleServicePeers,
             "database": self._handleNativePeers,
-            "queue": self._handleNativePeers
+            "queue": self._handleNativePeers,
+            "secret_public_key": self._handleNativePeers,
+            "secret_private_key": self._handleNativePeers
         }
 
     def accept(self, section, data):

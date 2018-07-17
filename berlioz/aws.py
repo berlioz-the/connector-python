@@ -9,12 +9,19 @@ def fetchKinesisClient(peer):
     kwargs = _getClientConfig(peer)
     return boto3.client('kinesis', **kwargs)
 
+def fetchSSMClient(peer):
+    kwargs = _getClientConfig(peer)
+    return boto3.client('ssm', **kwargs)
+
 def setupKinesisArgs(peer, actionName, xargs, xkwargs):
     if actionName == 'get_records':
         return
     if actionName == 'list_shards' and 'NextToken' in xkwargs:
         return
     xkwargs['StreamName'] = peer['name']
+
+def setupParameterArgs(peer, actionName, xargs, xkwargs):
+    xkwargs['Name'] = peer['name']
 
 def _getClientConfig(peer):
     kwargs = {}

@@ -92,12 +92,13 @@ class RequestWrapper(object):
 from . import aws as AWS
 nativeClientFetcher = {
     "dynamodb" : AWS.fetchDynamoClient,
-    "kinesis" : AWS.fetchKinesisClient
+    "kinesis" : AWS.fetchKinesisClient,
+    "rsa-secret" : AWS.fetchSSMClient
 }
 nativeClientArgSetter = {
-    "kinesis" : AWS.setupKinesisArgs
+    "kinesis" : AWS.setupKinesisArgs,
+    "rsa-secret" : AWS.setupParameterArgs
 }
-
 
 class NativeResourceWrapper(object):
 
@@ -119,6 +120,8 @@ class NativeResourceWrapper(object):
                 argsSetter = nativeClientArgSetter.get(peer['subClass'])
                 if argsSetter:
                     argsSetter(peer, propKey, args, kwargs)
+                logger.info('Args: %s ', args)
+                logger.info('kwargs: %s ', kwargs)
                 result = origMethod(*args, **kwargs)
                 logger.info('Running %s completed', propKey)
                 return result
