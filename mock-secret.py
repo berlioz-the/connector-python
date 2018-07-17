@@ -33,12 +33,12 @@ def hello():
 
 @app.route('/encrypt')
 def encrypt():
-    return berlioz.getSecretPublicKeyX('personal').encrypt('lalalalala')
+    return berlioz.getSecret('personal').encrypt('lalalalala')
 
 @app.route('/encrypt_decrypt')
 def encrypt_decrypt():
-    encrypted = berlioz.getSecretPublicKeyX('personal').encrypt('lalalalala')
-    decrypted = berlioz.getSecretPrivateKeyX('personal').decrypt(encrypted)
+    encrypted = berlioz.getSecret('personal').encrypt('lalalalala')
+    decrypted = berlioz.getSecret('personal').decrypt(encrypted)
     return decrypted
 
 

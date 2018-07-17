@@ -9,7 +9,7 @@ if not os.environ.get('BERLIOZ_CLUSTER'):
     logger.warning('Using berlioz sdk outside of managed environment.')
 else:
     from . import starter as _starter
-    from .secret import SecretPublicKeyClient, SecretPrivateKeyClient
+    from .secret import SecretClient
 
     from functools import wraps
     import inspect
@@ -67,9 +67,6 @@ else:
     def getSecretPublicKeyClient(name):
         return _starter.getNativeClient('secret_public_key', name)
 
-    def getSecretPublicKeyX(name):
-        return SecretPublicKeyClient(_starter, name)
-
     # SECRET PRIVATE KEY
     def monitorSecretPrivateKey(name, cb):
         _starter.monitorNatives('secret_private_key', name, cb)
@@ -83,8 +80,9 @@ else:
     def getSecretPrivateKeyClient(name):
         return _starter.getNativeClient('secret_private_key', name)
 
-    def getSecretPrivateKeyX(name):
-        return SecretPrivateKeyClient(_starter, name)
+    # SECRET PUBLIC & PRIVATE KEY
+    def getSecret(name):
+        return SecretClient(_starter, name)
 
     # TRACING
     def instrument(method, binary_annotations=None):

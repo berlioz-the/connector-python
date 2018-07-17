@@ -7,37 +7,32 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 
 class BaseRSAKeyClient:
-    def __init__(self, kind, starter, name):
-        self._kind = kind
+    def __init__(self, starter, name):
         self._starter = starter
         self._name = name
 
-    def _getKeyStr(self):
-        client = self._starter.getNativeClient(self._kind, self._name)
+    def _getKeyStr(self, kind):
+        client = self._starter.getNativeClient(kind, self._name)
         response = client.get_parameter(WithDecryption=True)
         param = response['Parameter']
         return param['Value']
 
-    def _getKey(self):
-        keyStr = self._getKeyStr()
+    def _getKey(self, kind):
+        keyStr = self._getKeyStr(kind)
         rsakey = RSA.importKey(keyStr)
         rsakey = PKCS1_OAEP.new(rsakey)
         return rsakey
 
-class SecretPublicKeyClient(BaseRSAKeyClient):
+class SecretClient(BaseRSAKeyClient):
     def __init__(self, starter, name):
-        BaseRSAKeyClient.__init__(self, 'secret_public_key', starter, name)
+        BaseRSAKeyClient.__init__(self, starter, name)
 
     def encrypt(self, data):
-        rsakey = self._getKey()
+        rsakey = self._getKey('secret_public_key')
         encrypted = rsakey.encrypt(data)
         return encrypted.encode('base64')
         
-class SecretPrivateKeyClient(BaseRSAKeyClient):
-    def __init__(self, starter, name):
-        BaseRSAKeyClient.__init__(self, 'secret_private_key', starter, name)
-
     def decrypt(self, data):
-        rsakey = self._getKey()
+        rsakey = self._getKey('secret_private_key')
         decrypted = rsakey.decrypt(data.decode('base64'))
         return decrypted
