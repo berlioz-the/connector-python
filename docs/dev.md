@@ -9,6 +9,7 @@ $ pip install -r requirements.txt
 # Publishing
 https://blog.jetbrains.com/pycharm/2017/05/how-to-publish-your-package-on-pypi/
 
+Update Version in berlioz/metadata.py
 ```
 $ python setup.py sdist
 $ twine register -r berlioz-prod dist/<THE-TAR-GZ> # FIRST TIME ONLY
