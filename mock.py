@@ -1,7 +1,8 @@
 import os
 # os.environ['BERLIOZ_AGENT_PATH'] = "ws://127.0.0.1:55555/82d1c32d-19bd-4e8b-a53b-7529e386b7c3"
-os.environ['BERLIOZ_AGENT_PATH'] = "ws://172.17.0.2:55555/638a0c81-669d-4b33-914f-f208182666b1"
-os.environ['BERLIOZ_CLUSTER'] = "kin"
+os.environ['BERLIOZ_AGENT_PATH'] = "ws://localhost:40000/4f1a9232-e01e-4fa1-a7e0-ad15991a880c"
+os.environ['BERLIOZ_CLUSTER'] = "hello"
+os.environ['BERLIOZ_SECTOR'] = "main"
 os.environ['BERLIOZ_SERVICE'] = "web"
 
 if __name__ == '__main__':
@@ -9,41 +10,49 @@ if __name__ == '__main__':
 else:
     from . import berlioz
 
-def outputPeers(peers):
-    berlioz.logger.info('**** Peers: %s', berlioz.getPeers('service', 'app', 'client'))
-    result = berlioz.request('service', 'app', 'client').get('/')
-    print('--------------------------------')
-    print (result.json())
-berlioz.monitorPeers('service', 'app', 'client', outputPeers)
-
-def outputDatabases(peers):
-    berlioz.logger.info('**** Database: %s', berlioz.getDatabase('arts'))
-    # table = berlioz.getDatabaseClient('arts')
-    # contents = table.scan()
+def onAllPeersChanged(peers):
+    berlioz.logger.info('**** onAllPeersChanged: %s', peers)
+    berlioz.logger.info('**** random peer: %s', berlioz.service('app').random())
+    berlioz.logger.info('**** first peer: %s', berlioz.service('app').first())
+    berlioz.logger.info('**** all peers: %s', berlioz.service('app').all())
+    # result = berlioz.request('service', 'app', 'client').get('/')
     # print('--------------------------------')
-    # print (contents)
-berlioz.monitorDatabases('arts', outputDatabases)
+    # print (result.json())
+kuku = berlioz.service('app').monitorAll(onAllPeersChanged)
 
-def outputQueues(peers):
-    berlioz.logger.info('*** Queue: %s', berlioz.getQueue('jobs'))
-    queue = berlioz.getQueueClient('jobs')
-    # result = queue.put_record(
-    #     Data='abcd-1234',
-    #     PartitionKey='111'
-    # )
-    # print('--------------------------------')
-    # print(result)
-    shards = queue.list_shards()
-    print('--------------------------------')
-    print(shards)
-    shardId = shards['Shards'][0]['ShardId']
-    iter = queue.get_shard_iterator(ShardId=shardId, ShardIteratorType='TRIM_HORIZON')
-    print('--------------------------------')
-    print(iter)
-    records = queue.get_records(ShardIterator=iter['ShardIterator'])
-    print('--------------------------------')
-    print(records)
-berlioz.monitorDatabases('arts', outputQueues)
+def onFirstPeerChanged(peer):
+    berlioz.logger.info('**** onFirstPeerChanged: %s', peer)
+kuku = berlioz.service('app').monitorFirst(onFirstPeerChanged)
+
+
+# def outputDatabases(peers):
+#     berlioz.logger.info('**** Database: %s', berlioz.getDatabase('arts'))
+#     # table = berlioz.getDatabaseClient('arts')
+#     # contents = table.scan()
+#     # print('--------------------------------')
+#     # print (contents)
+# berlioz.monitorDatabases('arts', outputDatabases)
+
+# def outputQueues(peers):
+#     berlioz.logger.info('*** Queue: %s', berlioz.getQueue('jobs'))
+#     queue = berlioz.getQueueClient('jobs')
+#     # result = queue.put_record(
+#     #     Data='abcd-1234',
+#     #     PartitionKey='111'
+#     # )
+#     # print('--------------------------------')
+#     # print(result)
+#     shards = queue.list_shards()
+#     print('--------------------------------')
+#     print(shards)
+#     shardId = shards['Shards'][0]['ShardId']
+#     iter = queue.get_shard_iterator(ShardId=shardId, ShardIteratorType='TRIM_HORIZON')
+#     print('--------------------------------')
+#     print(iter)
+#     records = queue.get_records(ShardIterator=iter['ShardIterator'])
+#     print('--------------------------------')
+#     print(records)
+# berlioz.monitorDatabases('arts', outputQueues)
 
 import time
 

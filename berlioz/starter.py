@@ -13,9 +13,15 @@ from .zipkin import Zipkin
 from .processor import Processor
 from .client import Client
 from .executor import Executor
+from .deep_eq import deep_eq
 
 import copy
-import requests
+import os
+
+berlioz_cluster = os.environ.get('BERLIOZ_CLUSTER')
+berlioz_sector = os.environ.get('BERLIOZ_SECTOR')
+berlioz_service = os.environ.get('BERLIOZ_SERVICE')
+
 
 registry = Registry()
 policy = Policy(registry)
@@ -30,6 +36,50 @@ def onMessage(msg):
 client = Client(onMessage)
 
 
+def monitorPeers(peerPath, cb):
+    registry.subscribe('peer', peerPath, cb)
+
+
+def monitorPeer(peerPath, selector, cb):
+    class nonlocal:
+        oldValue = None
+    
+    def innerCb(peers):
+        value = selector(peers)
+        isChanged = False
+        if value is not None:
+            if nonlocal.oldValue is not None:
+                isChanged = not deep_eq(value, nonlocal.oldValue)
+            else:
+                isChanged = True
+        else:
+            if nonlocal.oldValue is not None:
+                isChanged = True
+            else:
+                isChanged = False
+        if isChanged:
+            nonlocal.oldValue = value
+            cb(value)
+
+    registry.subscribe('peer', peerPath, innerCb)
+
+def getPeers(peerPath):
+    return registry.get('peer', peerPath)
+
+def getPeer(peerPath, selector):
+    peers = registry.get('peer', peerPath)
+    return selector(peers)
+
+def selectFirstPeer(peers):
+    return firstFromDict(peers)
+
+def selectRandomPeer(peers):
+    return randomFromDict(peers)
+
+
+
+
+
 def monitorNatives(kind, name, cb):
     registry.subscribe(kind, [name], cb)
 
@@ -42,98 +92,6 @@ def getNative(kind, name):
 
 
 
-def makeRequest(kind, name, endpoint):
-    return RequestWrapper([kind, name, endpoint])
-
-class RequestWrapper(object):
-
-    def __init__(self, target):
-        object.__setattr__(self, "_target", target)
-
-    def __getattribute__(self, propKey):
-
-        def perform(*args, **kwargs):
-            print(args)
-            print(kwargs)
-            kwargs.setdefault('headers', {})
-
-            target = object.__getattribute__(self, "_target")
-            if propKey == 'request':
-                method = args[0]
-                url = args[1]
-            else:
-                method = propKey 
-                url = args[0]
-
-            def execAction(peer, zipkin_span=None):
-                print(peer)
-                print(url)
-                origMethod = getattr(requests, propKey)
-                newargs = []
-                if propKey == 'request':
-                    newargs.append(method)    
-                finalUrl = peer['protocol'] + '://' + peer['address'] + ':' + str(peer['port'])
-                if url:
-                    finalUrl = finalUrl + url
-                newargs.append(finalUrl)
-                if zipkin_span:
-                    zipkin.addZipkinHeaders(kwargs['headers'], zipkin_span)
-                result = origMethod(*newargs, **kwargs)
-                return result
-            binary_annotations = {
-                'http.url': url
-            }
-            executor = Executor(registry, policy, zipkin, target, method, binary_annotations, execAction)
-            return executor.perform()
-
-        return perform
-
-
-from . import aws as AWS
-nativeClientFetcher = {
-    "dynamodb" : AWS.fetchDynamoClient,
-    "kinesis" : AWS.fetchKinesisClient,
-    "rsa-secret" : AWS.fetchSSMClient
-}
-nativeClientArgSetter = {
-    "kinesis" : AWS.setupKinesisArgs,
-    "rsa-secret" : AWS.setupParameterArgs
-}
-
-class NativeResourceWrapper(object):
-
-    def __init__(self, target):
-        object.__setattr__(self, "_target", target)
-
-    def __getattribute__(self, propKey):
-
-        def perform(*args, **kwargs):
-            target = object.__getattribute__(self, "_target")
-
-            def execAction(peer, zipkin_span=None):
-                logger.info('Running %s', propKey)
-                clientFetcher = nativeClientFetcher.get(peer['subClass'])
-                if not clientFetcher:
-                    raise Exception('Service not supported', peer['subClass'])
-                client = clientFetcher(peer)
-                origMethod = getattr(client, propKey)
-                argsSetter = nativeClientArgSetter.get(peer['subClass'])
-                if argsSetter:
-                    argsSetter(peer, propKey, args, kwargs)
-                logger.info('Args: %s ', args)
-                logger.info('kwargs: %s ', kwargs)
-                result = origMethod(*args, **kwargs)
-                logger.info('Running %s completed', propKey)
-                return result
-            executor = Executor(registry, policy, zipkin, target, propKey, None, execAction)
-            return executor.perform()
-
-        return perform
-
-
-def getNativeClient(kind, name):
-    nativeClient = NativeResourceWrapper([kind, name])
-    return nativeClient
 
 
 def instrument(method, binary_annotations):
@@ -143,10 +101,19 @@ def instrument(method, binary_annotations):
 def randomFromList(list):
     return rand.choice(list)
 
+def firstFromList(list):
+    return list[0]
+
 def randomFromDict(dict):
     if not dict:
         return None
     key = randomFromList(list(dict.keys()))
+    return dict[key]
+
+def firstFromDict(dict):
+    if not dict:
+        return None
+    key = firstFromList(list(dict.keys()))
     return dict[key]
 
 def setupFlask(app):

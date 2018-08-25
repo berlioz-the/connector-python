@@ -10,23 +10,21 @@ if not os.environ.get('BERLIOZ_CLUSTER'):
 else:
     from . import starter as _starter
     from .secret import SecretClient
+    from .cluster import Cluster
+    from .sector import Sector
 
     from functools import wraps
     import inspect
 
-    # PEERS 
-    def monitorPeers(kind, name, endpoint, cb):
-        _starter.registry.subscribe(kind, [name, endpoint], cb)
+    # NEW PEERS
+    def cluster(name, endpoint=None):
+        return Cluster(_starter, name, endpoint)
 
-    def getPeers(kind, name, endpoint):
-        return _starter.registry.get(kind, [name, endpoint])
+    def sector(name):
+        return Sector(_starter, name)
 
-    def getRandomPeer(kind, name, endpoint):
-        peers = getPeers(kind, name, endpoint)
-        return _starter.randomFromDict(peers)
-
-    def request(kind, name, endpoint):
-        return _starter.makeRequest(kind, name, endpoint)
+    def service(name, endpoint=None):
+        return sector(_starter.berlioz_sector).service(name, endpoint)
 
     # DATABASES 
     def monitorDatabases(name, cb):

@@ -4,16 +4,14 @@ from setuptools import setup
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
-from berlioz import metadata
-
 setup(
     name = "berlioz",
-    version = metadata.VERSION,
+    version = '0.1.2',
     url = 'https://berlioz.cloud',
     author = "Berlioz",
     author_email = "info@berlioz.cloud",
     maintainer = "Ruben Hakopian",
-    maintainer_email = "ruben.hakopian@gmail.com",
+    maintainer_email = "ruben@berlioz.cloud",
     description = ("Python SDK for Berlioz Cloud"),
     license = "Apache License 2.0",
     keywords = "microservices service mesh cloud aws",

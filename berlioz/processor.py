@@ -10,14 +10,6 @@ class Processor:
             "endpoints": self._acceptEndpoints,
             "peers": self._acceptPeers
         }
-        self._peerHandler = {
-            "service": self._handleServicePeers,
-            "cluster": self._handleServicePeers,
-            "database": self._handleNativePeers,
-            "queue": self._handleNativePeers,
-            "secret_public_key": self._handleNativePeers,
-            "secret_private_key": self._handleNativePeers
-        }
 
     def accept(self, section, data):
         logger.debug('Accept Section: %s, data: %s', section, data)
@@ -41,20 +33,22 @@ class Processor:
             self._registry.reset('endpoints')
 
     def _acceptPeers(self, data):
-        if data is not None:
-            self._registry.set('endpoints', [], data)
-            for kind, peers in data.items():
-                if kind in self._peerHandler:
-                    self._peerHandler[kind](kind, peers)
+        if data is None:
+            self._registry.reset('peer')
         else:
-            self._registry.reset('service')
-            self._registry.reset('cluster')
+            self._registry.set('endpoints', [], data)
+            for serviceId, serviceData in data.items():
+                if self._isEndpointService(serviceId):
+                    self._handleServicePeers(serviceId, serviceData)
+                else:
+                    self._handleResourcePeers(serviceId, serviceData)
+            
+    def _isEndpointService(self, serviceId):
+        return serviceId.startswith('service://') or serviceId.startswith('cluster://')
 
-    def _handleServicePeers(self, kind, data):
-        for name, serviceData in data.items():
-            for endpoint, endpointData in serviceData.items():
-                self._registry.set(kind, [name, endpoint], endpointData)
+    def _handleServicePeers(self, serviceId, serviceData):
+        for endpoint, endpointData in serviceData.items():
+            self._registry.set('peer', [serviceId, endpoint], endpointData)
 
-    def _handleNativePeers(self, kind, data):
-        for name, endpointData in data.items():
-            self._registry.set(kind, [name], endpointData)
+    def _handleResourcePeers(self, resourceId, resourceData):
+        self._registry.set('peer', [resourceId], resourceData)
