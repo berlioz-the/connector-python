@@ -8,14 +8,15 @@ import time
 
 class Executor:
     
-    def __init__(self, registry, policy, zipkin, target, trackerMethod, binary_annotations, actionCb):
-        self._registry = registry
+    def __init__(self, peerAccessor, policy, zipkin, target, trackerMethod, binary_annotations, actionCb):
+        self._peerAccessor = peerAccessor
         self._policy = policy
         self._target = target
         self._trackerMethod = trackerMethod
         self._binary_annotations = binary_annotations
         self._actionCb = actionCb
-    
+        self._zipkin = None
+        
         if zipkin.isEnabled():
             self._zipkin = zipkin
 
@@ -111,11 +112,8 @@ class Executor:
         #     });
     
     def _fetchPeer(self):
-        peers = self._registry.get(self._target[0], self._target[1:])
-        if not peers:
-            return None
-        key = rand.choice(list(peers.keys())) 
-        return peers[key]
+        peer = self._peerAccessor.random()
+        return peer
 
     def _checkCompleted(self):
         if self._context['hasError']:

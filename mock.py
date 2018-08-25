@@ -1,6 +1,6 @@
 import os
-# os.environ['BERLIOZ_AGENT_PATH'] = "ws://127.0.0.1:55555/82d1c32d-19bd-4e8b-a53b-7529e386b7c3"
-os.environ['BERLIOZ_AGENT_PATH'] = "ws://localhost:40000/4f1a9232-e01e-4fa1-a7e0-ad15991a880c"
+os.environ['BERLIOZ_AGENT_PATH'] = "ws://127.0.0.1:55555/82d1c32d-19bd-4e8b-a53b-7529e386b7c3"
+# os.environ['BERLIOZ_AGENT_PATH'] = "ws://localhost:40000/4f1a9232-e01e-4fa1-a7e0-ad15991a880c"
 os.environ['BERLIOZ_CLUSTER'] = "hello"
 os.environ['BERLIOZ_SECTOR'] = "main"
 os.environ['BERLIOZ_SERVICE'] = "web"
@@ -55,6 +55,7 @@ kuku = berlioz.service('app').monitorFirst(onFirstPeerChanged)
 # berlioz.monitorDatabases('arts', outputQueues)
 
 import time
+import json
 
 from flask import Flask
 from flask.json import jsonify
@@ -65,36 +66,11 @@ berlioz.setupFlask(app)
 app.name = 'myawesomeapp'
 
 @app.route('/')
-def hello():
-    res = None
-    with berlioz.instrument('theremote', binary_annotations={ 'rrr' : 1234 }):
-        # time.sleep(.5)
-        res = some_other_func()
-        # time.sleep(.5)
-    # time.sleep(.5)
-    return "Hello World! " + res
-
-@app.route('/db')
-def db():
-    table = berlioz.getDatabaseClient('contacts')
-    contents = table.scan()
-    return jsonify(contents)
-
-@berlioz.instrument_func()
-def some_other_func():
-    # pass
-    # time.sleep(1)
-    res = berlioz.request('service', 'app', 'client').get('/')
+def root():
+    # res = berlioz.service("app").all()
+    res = berlioz.service("app").request().get('/')
     return res.text
-
-
-
-# with berlioz.instrument('xxx', binary_annotations={ 'cccc' : 1234 }):
-#     time.sleep(0.5)
-#     some_other_func()
-#     time.sleep(0.25)
-
-
+    # return json.dumps(res)
 
 if __name__ == '__main__':
     app.run()
