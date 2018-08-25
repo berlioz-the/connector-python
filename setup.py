@@ -22,11 +22,11 @@ setup(
     long_description=read('README.rst'),
     python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*',
     install_requires=[
-        'boto3>=1.7.41',
-        'requests>=2.19.1',
-        'websocket-client>=0.48.0',
-        'py_zipkin>=0.12.0',
-        'pycrypto>=2.6.1'
+        'boto3==1.7.41',
+        'requests==2.19.1',
+        'websocket-client==0.48.0',
+        'py_zipkin==0.12.0',
+        'pycrypto==2.6.1'
     ],
     platforms='any',
     classifiers=[
