@@ -1,2 +1,2 @@
-VERSION_ARRAY = (0, 1, 4)
+VERSION_ARRAY = (0, 1, 5)
 VERSION = '.'.join(str(x) for x in VERSION_ARRAY)
