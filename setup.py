@@ -4,9 +4,11 @@ from setuptools import setup
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+from berlioz import metadata
+
 setup(
     name = "berlioz",
-    version = '0.1.2',
+    version = metadata.VERSION,
     url = 'https://berlioz.cloud',
     author = "Berlioz",
     author_email = "info@berlioz.cloud",
