@@ -11,7 +11,7 @@ if platform.system() == 'Windows':
 from py_zipkin.zipkin import zipkin_span
 from py_zipkin.zipkin import ZipkinAttrs
 from py_zipkin.util import generate_random_64bit_string as zipkin_generate_span
-from py_zipkin.stack import ThreadLocalStack as ZipkinThreadLocalStack
+from py_zipkin.storage import ThreadLocalStack as ZipkinThreadLocalStack
 
 class Zipkin:
     
