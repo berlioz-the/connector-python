@@ -21,6 +21,7 @@ class Zipkin:
         self._zipkin_context_stack = ZipkinThreadLocalStack()
         self._localName = os.environ['BERLIOZ_CLUSTER'] + '-' + os.environ['BERLIOZ_SERVICE']
         self._sampleRate = 100
+        self._endpoint = None
         self._policy.monitor('enable-zipkin', [], self._onZipkinEnabledChanged)
         self._policy.monitor('zipkin-service-id', [], self._onZipkinServiceIdChanged)
 
