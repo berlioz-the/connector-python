@@ -15,13 +15,14 @@ from py_zipkin.storage import ThreadLocalStack as ZipkinThreadLocalStack
 
 class Zipkin:
     
-    def __init__(self, policy):
+    def __init__(self, peerHelper, policy):
+        self._peerHelper = peerHelper
         self._policy = policy
         self._zipkin_context_stack = ZipkinThreadLocalStack()
         self._localName = os.environ['BERLIOZ_CLUSTER'] + '-' + os.environ['BERLIOZ_SERVICE']
         self._sampleRate = 100
         self._policy.monitor('enable-zipkin', [], self._onZipkinEnabledChanged)
-        self._policy.monitor('zipkin-endpoint', [], self._onZipkinEndpointChanged)
+        self._policy.monitor('zipkin-service-id', [], self._onZipkinServiceIdChanged)
 
     def isEnabled(self):
         return self._isEnabled and self._endpoint
@@ -110,10 +111,14 @@ class Zipkin:
             logger.error(e)
 
     def _onZipkinEnabledChanged(self, value):
+        logger.info('ZipkinEnabled = %s', value)
         self._isEnabled = value
 
-    def _onZipkinEndpointChanged(self, value):
-        self._endpoint = value
-        if self._endpoint:
-            self._endpoint = self._endpoint.replace('v2', 'v1')
+    def _onZipkinServiceIdChanged(self, value):
+        logger.info('ZipkinServiceId = %s', value)
+        peerPath = [value, 'client']
+        def onPeerchanged(peer):
+            self._endpoint = peer['protocol'] + '://' + peer['address'] + ':' + str(peer['port']) + '/api/v1/spans'
+            logger.info('ZipkinServiceEndpoint = %s', self._endpoint)
+        self._peerHelper.monitorPeer(peerPath, self._peerHelper.selectFirstPeer, onPeerchanged)
 

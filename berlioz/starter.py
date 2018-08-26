@@ -13,7 +13,7 @@ from .zipkin import Zipkin
 from .processor import Processor
 from .client import Client
 from .executor import Executor
-from .deep_eq import deep_eq
+from .peer_helper import PeerHelper
 
 import copy
 import os
@@ -23,59 +23,11 @@ berlioz_sector = os.environ.get('BERLIOZ_SECTOR')
 berlioz_service = os.environ.get('BERLIOZ_SERVICE')
 
 
-registry = Registry()
-policy = Policy(registry)
-zipkin = Zipkin(policy)
-processor = Processor(registry)
-
 def onMessage(msg):
     for section, data in msg.items():
         # logger.info('Section %s, data: %s', section, data)
         processor.accept(section, data)
     # logger.info('**** REGISTRY: %s', json.dumps(registry.extractRoot(), indent=4, sort_keys=True))
-client = Client(onMessage)
-
-
-def monitorPeers(peerPath, cb):
-    registry.subscribe('peer', peerPath, cb)
-
-
-def monitorPeer(peerPath, selector, cb):
-    class nonlocal:
-        oldValue = None
-    
-    def innerCb(peers):
-        value = selector(peers)
-        isChanged = False
-        if value is not None:
-            if nonlocal.oldValue is not None:
-                isChanged = not deep_eq(value, nonlocal.oldValue)
-            else:
-                isChanged = True
-        else:
-            if nonlocal.oldValue is not None:
-                isChanged = True
-            else:
-                isChanged = False
-        if isChanged:
-            nonlocal.oldValue = value
-            cb(value)
-
-    registry.subscribe('peer', peerPath, innerCb)
-
-def getPeers(peerPath):
-    return registry.get('peer', peerPath)
-
-def getPeer(peerPath, selector):
-    peers = registry.get('peer', peerPath)
-    return selector(peers)
-
-def selectFirstPeer(peers):
-    return firstFromDict(peers)
-
-def selectRandomPeer(peers):
-    return randomFromDict(peers)
-
 
 
 
@@ -119,3 +71,12 @@ def firstFromDict(dict):
 def setupFlask(app):
     from .frameworks.b_flask import Flask
     Flask(app, zipkin, policy)
+
+
+registry = Registry()
+peerHelper = PeerHelper(registry)
+policy = Policy(registry)
+zipkin = Zipkin(peerHelper, policy)
+processor = Processor(registry)
+client = Client(onMessage)
+

@@ -10,7 +10,7 @@ class Policy:
         self._registry = registry
         self._defaults = {
             'enable-zipkin': False,
-            'zipkin-endpoint': '',
+            'zipkin-service-id': '',
             'timeout': 5000,
             'no-peer-retry': True,
             'retry-count': 3,
