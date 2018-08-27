@@ -70,7 +70,7 @@ def firstFromDict(dict):
 
 def setupFlask(app):
     from .frameworks.b_flask import Flask
-    Flask(app, zipkin, policy)
+    Flask(app, zipkin, policy, registry)
 
 
 registry = Registry()
