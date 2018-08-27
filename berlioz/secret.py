@@ -12,10 +12,11 @@ class BaseRSAKeyClient:
         self._name = name
 
     def _getKeyStr(self, kind):
-        client = self._starter.getNativeClient(kind, self._name)
-        response = client.get_parameter(WithDecryption=True)
-        param = response['Parameter']
-        return param['Value']
+        # client = self._starter.getNativeClient(kind, self._name)
+        # response = client.get_parameter(WithDecryption=True)
+        # param = response['Parameter']
+        # return param['Value']
+        return None
 
     def _getKey(self, kind):
         keyStr = self._getKeyStr(kind)

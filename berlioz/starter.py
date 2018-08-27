@@ -31,42 +31,9 @@ def onMessage(msg):
 
 
 
-
-def monitorNatives(kind, name, cb):
-    registry.subscribe(kind, [name], cb)
-
-def getNatives(kind, name):
-    return registry.get(kind, [name])
-
-def getNative(kind, name):
-    peers = getNatives(kind, name)
-    return randomFromDict(peers)
-
-
-
-
-
 def instrument(method, binary_annotations):
     return zipkin.instrument(method, binary_annotations)
 
-
-def randomFromList(list):
-    return rand.choice(list)
-
-def firstFromList(list):
-    return list[0]
-
-def randomFromDict(dict):
-    if not dict:
-        return None
-    key = randomFromList(list(dict.keys()))
-    return dict[key]
-
-def firstFromDict(dict):
-    if not dict:
-        return None
-    key = firstFromList(list(dict.keys()))
-    return dict[key]
 
 def setupFlask(app):
     from .frameworks.b_flask import Flask

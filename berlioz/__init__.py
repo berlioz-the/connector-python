@@ -16,7 +16,7 @@ else:
     from functools import wraps
     import inspect
 
-    # NEW PEERS
+    # PEERS
     def cluster(name, endpoint=None):
         return Cluster(_starter, name, endpoint)
 
@@ -26,61 +26,42 @@ else:
     def service(name, endpoint=None):
         return sector(_starter.berlioz_sector).service(name, endpoint)
 
-    # DATABASES 
-    def monitorDatabases(name, cb):
-        _starter.monitorNatives('database', name, cb)
+    def database(name):
+        return sector(_starter.berlioz_sector).database(name)
 
-    def getDatabases(name):
-        return _starter.getNatives('database', name)
+    def queue(name):
+        return sector(_starter.berlioz_sector).queue(name)
 
-    def getDatabase(name):
-        return _starter.getNative('database', name)
 
-    def getDatabaseClient(name):
-        return _starter.getNativeClient('database', name)
+    # # SECRET PUBLIC KEY
+    # def monitorSecretPublicKey(name, cb):
+    #     _starter.monitorNatives('secret_public_key', name, cb)
 
-    # QUEUES 
-    def monitorQueues(name, cb):
-        _starter.monitorNatives('queue', name, cb)
+    # def getSecretPublicKeys(name):
+    #     return _starter.getNatives('secret_public_key', name)
 
-    def getQueues(name):
-        return _starter.getNatives('queue', name)
+    # def getSecretPublicKey(name):
+    #     return _starter.getNative('secret_public_key', name)
 
-    def getQueue(name):
-        return _starter.getNative('queue', name)
+    # def getSecretPublicKeyClient(name):
+    #     return _starter.getNativeClient('secret_public_key', name)
 
-    def getQueueClient(name):
-        return _starter.getNativeClient('queue', name)
+    # # SECRET PRIVATE KEY
+    # def monitorSecretPrivateKey(name, cb):
+    #     _starter.monitorNatives('secret_private_key', name, cb)
 
-    # SECRET PUBLIC KEY
-    def monitorSecretPublicKey(name, cb):
-        _starter.monitorNatives('secret_public_key', name, cb)
+    # def getSecretPrivateKeys(name):
+    #     return _starter.getNatives('secret_private_key', name)
 
-    def getSecretPublicKeys(name):
-        return _starter.getNatives('secret_public_key', name)
+    # def getSecretPrivateKey(name):
+    #     return _starter.getNative('secret_private_key', name)
 
-    def getSecretPublicKey(name):
-        return _starter.getNative('secret_public_key', name)
+    # def getSecretPrivateKeyClient(name):
+    #     return _starter.getNativeClient('secret_private_key', name)
 
-    def getSecretPublicKeyClient(name):
-        return _starter.getNativeClient('secret_public_key', name)
-
-    # SECRET PRIVATE KEY
-    def monitorSecretPrivateKey(name, cb):
-        _starter.monitorNatives('secret_private_key', name, cb)
-
-    def getSecretPrivateKeys(name):
-        return _starter.getNatives('secret_private_key', name)
-
-    def getSecretPrivateKey(name):
-        return _starter.getNative('secret_private_key', name)
-
-    def getSecretPrivateKeyClient(name):
-        return _starter.getNativeClient('secret_private_key', name)
-
-    # SECRET PUBLIC & PRIVATE KEY
-    def getSecret(name):
-        return SecretClient(_starter, name)
+    # # SECRET PUBLIC & PRIVATE KEY
+    # def getSecret(name):
+    #     return SecretClient(_starter, name)
 
     # TRACING
     def instrument(method, binary_annotations=None):

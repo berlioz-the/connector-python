@@ -16,10 +16,8 @@ nativeClientArgSetter = {
 }
 
 class NativeResource(PeerAccessor):
-    def __init__(self, starter, id, endpoint):
-        if endpoint is None:
-            endpoint = 'default'
-        PeerAccessor.__init__(self, starter, [id, endpoint])
+    def __init__(self, starter, id):
+        PeerAccessor.__init__(self, starter, [id])
 
     def client(self):
         nativeClient = NativeResourceWrapper(self)
