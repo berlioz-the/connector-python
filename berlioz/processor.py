@@ -8,13 +8,14 @@ class Processor:
         self._messageHandlers = {
             "policies": self._acceptPolicies,
             "endpoints": self._acceptEndpoints,
-            "peers": self._acceptPeers
+            "peers": self._acceptPeers,
+            "consumes": self._acceptMetaConsumes
         }
 
     def accept(self, section, data):
         logger.debug('Accept Section: %s, data: %s', section, data)
 
-        handler = self._messageHandlers[section]
+        handler = self._messageHandlers.get(section)
         if handler is not None: 
             return handler(data)
 
@@ -23,6 +24,12 @@ class Processor:
             self._registry.set('policies', [], data)
         else:
             self._registry.reset('policies')
+
+    def _acceptMetaConsumes(self, data):
+        if data is not None:
+            self._registry.set('consumes', [], data)
+        else:
+            self._registry.reset('consumes')
 
     def _acceptEndpoints(self, data):
         if data is not None:
