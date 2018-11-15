@@ -14,10 +14,6 @@ class PeerAccessor:
         return self._peerPath
 
     @property
-    def peerId(self):
-        return self._peerPath[0]
-
-    @property
     def registry(self):
         return self._starter.registry
     

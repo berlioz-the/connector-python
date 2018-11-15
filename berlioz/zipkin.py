@@ -117,9 +117,8 @@ class Zipkin:
 
     def _onZipkinServiceIdChanged(self, value):
         logger.info('ZipkinServiceId = %s', value)
-        peerPath = [value, 'client']
         def onPeerchanged(peer):
             self._endpoint = peer['protocol'] + '://' + peer['address'] + ':' + str(peer['port']) + '/api/v1/spans'
             logger.info('ZipkinServiceEndpoint = %s', self._endpoint)
-        self._peerHelper.monitorPeer(peerPath, self._peerHelper.selectFirstPeer, onPeerchanged)
+        self._peerHelper.monitorPeer([value], self._peerHelper.selectFirstPeer, onPeerchanged)
 

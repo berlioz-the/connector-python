@@ -9,7 +9,7 @@ class PeerHelper:
         self._registry = registry
 
     def monitorPeers(self, peerPath, cb):
-        self._registry.subscribe('peer', peerPath, cb)
+        self._registry.subscribe('peers', peerPath, cb)
 
     def monitorPeer(self, peerPath, selector, cb):
         class nonlocal:
@@ -32,13 +32,13 @@ class PeerHelper:
                 nonlocal.oldValue = value
                 cb(value)
 
-        self._registry.subscribe('peer', peerPath, innerCb)
+        self._registry.subscribe('peers', peerPath, innerCb)
 
     def getPeers(self, peerPath):
-        return self._registry.get('peer', peerPath)
+        return self._registry.get('peers', peerPath)
 
     def getPeer(self, peerPath, selector):
-        peers = self._registry.get('peer', peerPath)
+        peers = self._registry.get('peers', peerPath)
         return selector(peers)
 
     def selectFirstPeer(self, peers):

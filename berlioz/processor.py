@@ -41,21 +41,11 @@ class Processor:
 
     def _acceptPeers(self, data):
         if data is None:
-            self._registry.reset('peer')
+            self._registry.reset('peers')
         else:
-            self._registry.set('endpoints', [], data)
+            self._registry.set('peers', [], data)
             for serviceId, serviceData in data.items():
-                if self._isEndpointService(serviceId):
-                    self._handleServicePeers(serviceId, serviceData)
-                else:
-                    self._handleResourcePeers(serviceId, serviceData)
+                self._handlePeers(serviceId, serviceData)
             
-    def _isEndpointService(self, serviceId):
-        return serviceId.startswith('service://') or serviceId.startswith('cluster://')
-
-    def _handleServicePeers(self, serviceId, serviceData):
-        for endpoint, endpointData in serviceData.items():
-            self._registry.set('peer', [serviceId, endpoint], endpointData)
-
-    def _handleResourcePeers(self, resourceId, resourceData):
-        self._registry.set('peer', [resourceId], resourceData)
+    def _handlePeers(self, serviceId, serviceData):
+        self._registry.set('peers', [serviceId], serviceData)

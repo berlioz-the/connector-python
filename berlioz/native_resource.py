@@ -3,6 +3,7 @@ logger = log.get(__name__)
 
 from .peer_accessor import PeerAccessor
 
+import json
 
 from . import aws as AWS
 nativeClientFetcher = {

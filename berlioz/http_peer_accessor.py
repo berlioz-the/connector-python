@@ -2,6 +2,7 @@ from . import log
 logger = log.get(__name__)
 
 import requests
+import json
 
 from .peer_accessor import PeerAccessor
 
@@ -9,7 +10,8 @@ class HttpPeerAccessor(PeerAccessor):
     def __init__(self, starter, id, endpoint):
         if endpoint is None:
             endpoint = 'default'
-        PeerAccessor.__init__(self, starter, [id, endpoint])
+        serviceId = id + '-' + endpoint
+        PeerAccessor.__init__(self, starter, [serviceId])
 
     def request(self ):
         return RequestWrapper(self)

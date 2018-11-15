@@ -30,7 +30,6 @@ def onMessage(msg):
     # logger.info('**** REGISTRY: %s', json.dumps(registry.extractRoot(), indent=4, sort_keys=True))
 
 
-
 def instrument(method, binary_annotations):
     return zipkin.instrument(method, binary_annotations)
 
