@@ -16,6 +16,13 @@ else:
     from functools import wraps
     import inspect
 
+    from .utils import calculateIdentity
+    my_identity = calculateIdentity(os.environ)
+
+    # IDENTITY
+    def identity():
+        return my_identity
+
     # PEERS
     def cluster(name, endpoint=None):
         return Cluster(_starter, name, endpoint)
