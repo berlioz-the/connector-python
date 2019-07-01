@@ -1,10 +1,10 @@
 from . import log
 logger = log.get(__name__)
 
-import os
 from .utils import delay
 import random as rand
 import time
+from . import environment
 
 class Executor:
     
@@ -21,11 +21,11 @@ class Executor:
             self._zipkin = zipkin
 
         if target[0] == 'service':
-            self._remoteServiceName = os.environ['BERLIOZ_CLUSTER'] + '-' + target[1]
+            self._remoteServiceName = environment.get('BERLIOZ_CLUSTER') + '-' + target[1]
         elif target[0] == 'cluster':
             self._remoteServiceName = target[1] + '-' + target[2]
         else:
-            self._remoteServiceName = os.environ['BERLIOZ_CLUSTER'] + '-' + '-'.join(target)
+            self._remoteServiceName = environment.get('BERLIOZ_CLUSTER') + '-' + '-'.join(target)
 
         self._context = {
             "canRetry": True,

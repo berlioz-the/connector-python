@@ -2,7 +2,6 @@ from . import log
 logger = log.get(__name__)
 
 import requests
-import os
 import platform
 
 if platform.system() == 'Windows':
@@ -13,13 +12,15 @@ from py_zipkin.zipkin import ZipkinAttrs
 from py_zipkin.util import generate_random_64bit_string as zipkin_generate_span
 from py_zipkin.storage import ThreadLocalStack as ZipkinThreadLocalStack
 
+from . import environment
+
 class Zipkin:
     
     def __init__(self, peerHelper, policy):
         self._peerHelper = peerHelper
         self._policy = policy
         self._zipkin_context_stack = ZipkinThreadLocalStack()
-        self._localName = 'service://' + os.environ['BERLIOZ_CLUSTER'] + '-' + os.environ['BERLIOZ_SECTOR'] + '-' + os.environ['BERLIOZ_SERVICE']
+        self._localName = 'service://' + environment.get('BERLIOZ_CLUSTER') + '-' + environment.get('BERLIOZ_SECTOR') + '-' + environment.get('BERLIOZ_SERVICE')
         self._sampleRate = 100
         self._endpoint = None
         self._policy.monitor('enable-zipkin', [], self._onZipkinEnabledChanged)

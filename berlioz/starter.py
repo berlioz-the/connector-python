@@ -14,13 +14,14 @@ from .processor import Processor
 from .client import Client
 from .executor import Executor
 from .peer_helper import PeerHelper
+from . import environment
 
 import copy
-import os
 
-berlioz_cluster = os.environ.get('BERLIOZ_CLUSTER')
-berlioz_sector = os.environ.get('BERLIOZ_SECTOR')
-berlioz_service = os.environ.get('BERLIOZ_SERVICE')
+
+berlioz_cluster = environment.get('BERLIOZ_CLUSTER')
+berlioz_sector = environment.get('BERLIOZ_SECTOR')
+berlioz_service = environment.get('BERLIOZ_SERVICE')
 
 
 def onMessage(msg):

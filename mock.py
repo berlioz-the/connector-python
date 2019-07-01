@@ -1,6 +1,7 @@
 import os
-os.environ['BERLIOZ_AGENT_PATH'] = "ws://127.0.0.1:55555/82d1c32d-19bd-4e8b-a53b-7529e386b7c3"
-# os.environ['BERLIOZ_AGENT_PATH'] = "ws://localhost:40000/4f1a9232-e01e-4fa1-a7e0-ad15991a880c"
+os.environ['BERLIOZ_HOST_IP'] = "127.0.0.1"
+os.environ['BERLIOZ_TASK_ID'] = "abcd"
+os.environ['BERLIOZ_AGENT_PATH'] = "ws://${BERLIOZ_HOST_IP}:55555/${BERLIOZ_TASK_ID}"
 os.environ['BERLIOZ_CLUSTER'] = "hello"
 os.environ['BERLIOZ_SECTOR'] = "main"
 os.environ['BERLIOZ_SERVICE'] = "web"

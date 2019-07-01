@@ -2,10 +2,11 @@ from . import log
 logger = log.get(__name__)
 
 from .utils import delay
-import os
 import websocket
 import json
 import threading
+
+from . import environment
 
 class Client(): 
 
@@ -28,8 +29,9 @@ class Client():
         if self.isClosed:
             return
 
-        logger.info('Connecting...')
-        ws = websocket.WebSocketApp(os.environ['BERLIOZ_AGENT_PATH'],
+        url = environment.get('BERLIOZ_AGENT_PATH')
+        logger.info('Connecting to agent %s...', url)
+        ws = websocket.WebSocketApp(url,
                                     on_message = self._onMessage,
                                     on_error = self._onError,
                                     on_close = self._onClose)

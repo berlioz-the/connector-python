@@ -4,8 +4,9 @@ logger = log.get(__name__)
 from . import metadata
 logger.info('BerliozPythonSDK v%s', metadata.VERSION)
 
-import os
-if not os.environ.get('BERLIOZ_CLUSTER'):
+from . import environment
+
+if not environment.get('BERLIOZ_CLUSTER'):
     logger.warning('Using berlioz sdk outside of managed environment.')
 else:
     from . import starter as _starter
@@ -17,7 +18,7 @@ else:
     import inspect
 
     from .utils import calculateIdentity
-    my_identity = calculateIdentity(os.environ)
+    my_identity = calculateIdentity(environment.getMap())
 
     # IDENTITY
     def identity():
